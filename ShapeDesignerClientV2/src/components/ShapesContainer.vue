@@ -1,27 +1,22 @@
 <script lang="ts">
-import {
-  Circle,
-  Diamond,
-  Triangle,
-  type ShapeObject,
-} from "@/models/ShapeModels";
+import { type ApiShape, type ShapeObject } from "@/models/ShapeModels";
 import { defineComponent } from "vue";
+import { useStore } from "../store/piniaStore";
 export default defineComponent({
+  setup() {
+    const store = useStore();
+
+    return {
+      store,
+    };
+  },
   mounted() {
-    fetch("http://localhost:3000/shapes").then((res) => {
-      res.json().then((resData) => {
-        for (let i = resData.length - 1; i >= 0; i--) {
-          const shapeData = resData[i];
-          this.addFromApiData(shapeData);
-        }
-        console.log("SHAPES ADDED: ", this.shapes);
-      });
-    });
+    this.store.initiateShapes();
   },
 
   data() {
     return {
-      shapes: [] as ShapeObject[],
+      // shapes: [] as ShapeObject[],
       isConnected: false,
     };
   },
@@ -36,60 +31,25 @@ export default defineComponent({
     },
 
     // Fired when the server sends something on the "message" channel.
-    message(data: {
-      x: number;
-      y: number;
-      shapeType: "circle" | "diamond" | "triangle";
-      label: string;
-    }) {
-      this.addFromApiData(data);
+    message(data: ApiShape) {
+      this.store.addShapeFromApi(data);
     },
   },
 
   methods: {
-    addFromApiData(data: {
-      x: number | string;
-      y: number | string;
-      label: string;
-      shapeType: string;
-    }) {
-      console.log("ADD SHAPE FROM API");
-      switch (data.shapeType) {
-        case "circle":
-          this.addShape(new Circle(Number(data.x), Number(data.y), data.label));
-          break;
-        case "diamond":
-          this.addShape(
-            new Diamond(Number(data.x), Number(data.y), data.label)
-          );
-          break;
-        case "triangle":
-          this.addShape(
-            new Triangle(Number(data.x), Number(data.y), data.label)
-          );
-          break;
-        default:
-          break;
-      }
-    },
-
-    addShape(shape: ShapeObject) {
-      this.shapes.push(shape);
-      if (this.shapes.length > 10) {
-        this.shapes.splice(0, 1);
-      }
-    },
     onDeleteItemCallback(shape: ShapeObject) {
-      const index = this.shapes.findIndex((elem) => elem.label === shape.label);
+      const index = this.store.shapes.findIndex(
+        (elem) => elem.label === shape.label
+      );
       if (index !== -1) {
         //remove element at position x
-        this.shapes.splice(index, 1);
+        this.store.shapes.splice(index, 1);
       }
     },
 
     cleanOpenMenu() {
-      for (let i = 0; i < this.shapes.length; i++) {
-        this.shapes[i].isMenuShowing = false;
+      for (let i = 0; i < this.store.shapes.length; i++) {
+        this.store.shapes[i].isMenuShowing = false;
       }
     },
 
@@ -110,7 +70,7 @@ export default defineComponent({
 <template>
   <div v-on:click="onScreenClick" class="container">
     <div
-      v-for="shape in shapes"
+      v-for="shape in store.shapes"
       class="elementContainer"
       v-bind:key="JSON.stringify(shape)"
       :style="{

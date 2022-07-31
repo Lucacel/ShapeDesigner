@@ -1,3 +1,10 @@
+export type ApiShape = {
+  x: number | string;
+  y: number | string;
+  label: string;
+  shapeType: "circle" | "diamond" | "triangle";
+};
+
 export type MenuItem = {
   label: string;
   action: "delete" | "rename";
