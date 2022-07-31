@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type ApiShape, type ShapeObject } from "@/models/ShapeModels";
+import type { ApiShape, ShapeObject } from "@/models/ShapeModels";
 import { defineComponent } from "vue";
 import { useStore } from "../store/piniaStore";
 export default defineComponent({
